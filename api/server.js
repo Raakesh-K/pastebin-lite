@@ -31,26 +31,25 @@ app.get("/api/healthz", async (req, res) => {
 // CREATE PASTE
 app.post("/api/pastes", async (req, res) => {
   try {
-    const { code, ttl, max_views } = req.body;
+    const { content, ttl_seconds, max_views } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO pastes (code, ttl, max_views, views) VALUES ($1, $2, $3, 0) RETURNING id",
-      [code, ttl || null, max_views || null]
+      `INSERT INTO pastes (code, ttl, views, max_views)
+       VALUES ($1, $2, 0, $3)
+       RETURNING id`,
+      [content, ttl_seconds || null, max_views || null]
     );
 
-    const pasteId = result.rows[0].id;
-    const baseUrl = req.headers.origin;
-
     res.json({
-      id: pasteId,
-      url: `/p/${pasteId}`
+      url: `/p/${result.rows[0].id}`
     });
 
   } catch (err) {
-    console.error("INSERT ERROR:", err);
+    console.error("DB ERROR:", err);   // 🔥 THIS WILL SHOW IN VERCEL LOGS
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 
