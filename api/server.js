@@ -2,7 +2,7 @@
 const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
-const { nanoid } = require("nanoid");
+
 const path = require("path");
 
 
