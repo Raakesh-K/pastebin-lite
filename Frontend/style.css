@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  height: 100vh;
+  background: radial-gradient(circle at top left, #1f3c88, #0f2027);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+/* Card Container */
+.container {
+  width: 90%;
+  max-width: 850px;
+  padding: 40px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.15);
+  animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 25px;
+  letter-spacing: 1px;
+  font-size: 30px;
+}
+
+/* Textarea */
+textarea {
+  width: 100%;
+  height: 200px;
+  padding: 18px;
+  border-radius: 14px;
+  border: none;
+  resize: none;
+  font-size: 15px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  outline: none;
+  margin-bottom: 20px;
+}
+
+/* Input Row */
+.input-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+input {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(0,0,0,0.4);
+  color: white;
+  outline: none;
+  font-size: 14px;
+}
+
+/* Button */
+button {
+  display: block;
+  margin: auto;
+  padding: 14px 35px;
+  border-radius: 50px;
+  border: none;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #00feba, #5b86e5);
+  color: #111;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 20px #00feba;
+}
+
+/* Result Link */
+#result {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+#result a {
+  color: #00ffcc;
+  text-decoration: none;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+#result a:hover {
+  text-shadow: 0 0 10px #00ffcc;
+}
