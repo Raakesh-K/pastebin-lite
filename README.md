@@ -16,11 +16,13 @@ npm install
 ```
 DATABASE_URL=your_postgresql_connection_string
 BASE_URL=http://localhost:3000
+```
 Health check:
+```
 
 http://localhost:3000/api/healthz
-
 ```
+
 4. Start the Application
 ```
 npm run dev
@@ -60,10 +62,7 @@ Health check endpoint for automated testing
 https://pastebin-lite-psi-ruby.vercel.app
 ```
 
-8 
----
-
-Now save as **README.md**, then run:
+8 Now save as **README.md**, then run:
 
 ```bash
 git add README.md
