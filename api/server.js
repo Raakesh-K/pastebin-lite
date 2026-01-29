@@ -43,7 +43,7 @@ app.post("/api/pastes", async (req, res) => {
 
     res.json({
       id: pasteId,
-      url: `${baseUrl}/p/${pasteId}`
+      url: `/p/${pasteId}`
     });
 
   } catch (err) {
