@@ -4,7 +4,7 @@ const cors = require("cors");
 const pool = require("./db");
 const { nanoid } = require("nanoid");
 const path = require("path");
-const PORT = process.env.PORT || 3000;
+
 
 const app = express();
 app.use(cors());
@@ -96,4 +96,5 @@ app.get("/p/:id", async (req, res) => {
   res.send(`<pre>${paste.content.replace(/</g, "&lt;")}</pre>`);
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+module.exports = app;
+
