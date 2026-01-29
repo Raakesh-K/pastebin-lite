@@ -30,23 +30,21 @@ app.get("/api/healthz", async (req, res) => {
 
 // CREATE PASTE
 app.post("/api/pastes", async (req, res) => {
-  const { content, ttl_seconds, max_views } = req.body;
+  try {
+    const { content, ttl, views } = req.body;
 
-  if (!content || content.trim() === "")
-    return res.status(400).json({ error: "Content required" });
+    const result = await pool.query(
+      "INSERT INTO pastes (code, ttl, views) VALUES ($1, $2, $3) RETURNING id",
+      [content, ttl || null, views || null]
+    );
 
-  const id = nanoid(8);
-  const now = Date.now();
-  const expires_at = ttl_seconds ? now + ttl_seconds * 1000 : null;
-
-  await pool.query(
-    `INSERT INTO pastes(id, content, created_at, expires_at, max_views)
-     VALUES($1,$2,$3,$4,$5)`,
-    [id, content, now, expires_at, max_views || null]
-  );
-
-  res.json({ id, url: `${process.env.BASE_URL}/p/${id}` });
+    res.json({ id: result.rows[0].id });
+  } catch (err) {
+    console.error(err);   // 👈 shows error in Vercel logs
+    res.status(500).json({ error: "DB insert failed" });
+  }
 });
+
 
 // FETCH PASTE
 app.get("/api/pastes/:id", async (req, res) => {
