@@ -2,10 +2,10 @@
   "name": "pastebin-lite",
   "version": "1.0.0",
   "description": "Pastebin Lite App",
-  "main": "Backend/server.js",
+  "main": "node api/server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node Backend/server.js"
+    "start": "node api/server.js"
   },
   "dependencies": {
     "cors": "^2.8.6",
