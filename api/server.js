@@ -44,7 +44,9 @@ app.post("/api/pastes", async (req, res) => {
       [id, content, now, expires_at, max_views || null]
     );
 
-    res.json({ id, url: `${process.env.BASE_URL}/p/${id}` });
+   res.json({ id, url: `/p/${id}` });
+
+   
 
   } catch (err) {
     console.error("CREATE PASTE ERROR:", err);  // 👈 LOGS REAL DB ERROR
