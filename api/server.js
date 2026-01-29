@@ -1,4 +1,4 @@
-require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const pool = require("./db");   // ✅ correct path
@@ -87,4 +87,6 @@ app.get("/p/:id", async (req, res) => {
   res.send(`<pre>${paste.content.replace(/</g, "&lt;")}</pre>`);
 });
 
-module.exports = app;
+const serverless = require("serverless-http");
+module.exports = serverless(app);
+
