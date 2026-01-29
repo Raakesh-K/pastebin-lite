@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const pool = require("./db");
+const pool = require("../api/db");
 const { nanoid } = require("nanoid");
 const path = require("path");
 
