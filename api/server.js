@@ -4,7 +4,7 @@ const cors = require("cors");
 const pool = require("./db");
 const { nanoid } = require("nanoid");
 const path = require("path");
-const PORT = process.env.PORT || 3000;
+
 
 
 const app = express();
