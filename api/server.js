@@ -19,52 +19,67 @@ app.get("/api/healthz", async (req, res) => {
   try {
     await pool.query("SELECT 1");
     res.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error("HEALTH CHECK ERROR:", err);   // 👈 THIS LINE
     res.status(500).json({ ok: false });
   }
 });
 
+
 // CREATE PASTE
 app.post("/api/pastes", async (req, res) => {
-  const { content, ttl_seconds, max_views } = req.body;
+  try {
+    const { content, ttl_seconds, max_views } = req.body;
 
-  if (!content || content.trim() === "")
-    return res.status(400).json({ error: "Content required" });
+    if (!content || content.trim() === "")
+      return res.status(400).json({ error: "Content required" });
 
-  const id = nanoid(8);
-  const now = Date.now();
-  const expires_at = ttl_seconds ? now + ttl_seconds * 1000 : null;
+    const id = nanoid(8);
+    const now = Date.now();
+    const expires_at = ttl_seconds ? now + ttl_seconds * 1000 : null;
 
-  await pool.query(
-    `INSERT INTO pastes(id, content, created_at, expires_at, max_views, views)
-     VALUES($1,$2,$3,$4,$5,0)`,
-    [id, content, now, expires_at, max_views || null]
-  );
+    await pool.query(
+      `INSERT INTO pastes(id, content, created_at, expires_at, max_views, views)
+       VALUES($1,$2,$3,$4,$5,0)`,
+      [id, content, now, expires_at, max_views || null]
+    );
 
-  res.json({ id, url: `${process.env.BASE_URL}/p/${id}` });
+    res.json({ id, url: `${process.env.BASE_URL}/p/${id}` });
+
+  } catch (err) {
+    console.error("CREATE PASTE ERROR:", err);  // 👈 LOGS REAL DB ERROR
+    res.status(500).json({ error: "Server error" });
+  }
 });
+
 
 // FETCH PASTE API
 app.get("/api/pastes/:id", async (req, res) => {
-  const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
-  const paste = rows[0];
-  if (!paste) return res.status(404).json({ error: "Not found" });
+  try {
+    const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
+    const paste = rows[0];
+    if (!paste) return res.status(404).json({ error: "Not found" });
 
-  const now = Date.now();
+    const now = Date.now();
 
-  if (paste.expires_at && now > paste.expires_at)
-    return res.status(404).json({ error: "Expired" });
+    if (paste.expires_at && now > paste.expires_at)
+      return res.status(404).json({ error: "Expired" });
 
-  if (paste.max_views && paste.views >= paste.max_views)
-    return res.status(404).json({ error: "View limit exceeded" });
+    if (paste.max_views && paste.views >= paste.max_views)
+      return res.status(404).json({ error: "View limit exceeded" });
 
-  await pool.query("UPDATE pastes SET views = views + 1 WHERE id=$1", [paste.id]);
+    await pool.query("UPDATE pastes SET views = views + 1 WHERE id=$1", [paste.id]);
 
-  res.json({
-    content: paste.content,
-    remaining_views: paste.max_views ? paste.max_views - (paste.views + 1) : null,
-    expires_at: paste.expires_at ? new Date(paste.expires_at).toISOString() : null
-  });
+    res.json({
+      content: paste.content,
+      remaining_views: paste.max_views ? paste.max_views - (paste.views + 1) : null,
+      expires_at: paste.expires_at ? new Date(paste.expires_at).toISOString() : null
+    });
+
+  } catch (err) {
+    console.error("FETCH PASTE ERROR:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // VIEW PASTE HTML
