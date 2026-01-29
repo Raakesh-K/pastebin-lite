@@ -8,19 +8,23 @@ cd pastebin-lite
 npm install
 ```
 2. Install Dependencies
+ ```  
 npm install
 ```
-```
+
 3.Configure Environment Variables
+```
 DATABASE_URL=your_postgresql_connection_string
 BASE_URL=http://localhost:3000
 Health check:
 
 http://localhost:3000/api/healthz
 
-
+```
 4. Start the Application
+```
 npm run dev
+```
 
 5 Persistence Layer
 
@@ -52,7 +56,9 @@ JSON-based API responses
 Health check endpoint for automated testing
 
 7 Deployed Application
+```
 https://pastebin-lite-psi-ruby.vercel.app
+```
 
 8 
 ---
