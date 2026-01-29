@@ -31,11 +31,11 @@ app.get("/api/healthz", async (req, res) => {
 // CREATE PASTE
 app.post("/api/pastes", async (req, res) => {
   try {
-    const { content, ttl_seconds, max_views } = req.body;
+    const { code, ttl, max_views } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO pastes (code, ttl, max_views) VALUES ($1, $2, $3) RETURNING id",
-      [content, ttl_seconds || null, max_views || null]
+      "INSERT INTO pastes (code, ttl, max_views, views) VALUES ($1, $2, $3, 0) RETURNING id",
+      [code, ttl || null, max_views || null]
     );
 
     const pasteId = result.rows[0].id;
@@ -59,15 +59,13 @@ app.post("/api/pastes", async (req, res) => {
 
 
 
+
 // FETCH PASTE
 app.get("/api/pastes/:id", async (req, res) => {
   try {
-    const { rows } = await pool.query(
-      "SELECT * FROM pastes WHERE id=$1",
-      [req.params.id]
-    );
-
+    const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
     const paste = rows[0];
+
     if (!paste) return res.status(404).json({ error: "Not found" });
 
     if (paste.max_views && paste.views >= paste.max_views)
@@ -85,6 +83,7 @@ app.get("/api/pastes/:id", async (req, res) => {
     res.status(500).json({ error: "Fetch failed" });
   }
 });
+
 
 
 
@@ -110,6 +109,7 @@ app.get("/p/:id", async (req, res) => {
     res.status(500).send("Error");
   }
 });
+
 
 
 
