@@ -38,7 +38,14 @@ app.post("/api/pastes", async (req, res) => {
       [content, ttl || null, views || null]
     );
 
-    res.json({ id: result.rows[0].id });
+   const pasteId = result.rows[0].id;
+const baseUrl = req.headers.origin || "https://pastebin-lite-psi-ruby.vercel.app";
+
+res.json({
+  id: pasteId,
+  url: `${baseUrl}/p/${pasteId}`
+});
+
   } catch (err) {
     console.error(err);   // 👈 shows error in Vercel logs
     res.status(500).json({ error: "DB insert failed" });
