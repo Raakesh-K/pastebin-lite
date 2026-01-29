@@ -34,23 +34,24 @@ app.post("/api/pastes", async (req, res) => {
     const { content, ttl_seconds, max_views } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO pastes (code, ttl, views) VALUES ($1, $2, $3) RETURNING id",
-      [content, ttl_seconds || null, max_views || null]
+      "INSERT INTO pastes (code, ttl, views) VALUES ($1, $2, 0) RETURNING id",
+      [content, ttl_seconds || null]
     );
 
     const pasteId = result.rows[0].id;
     const baseUrl = req.headers.origin;
 
-    return res.json({
+    res.json({
       id: pasteId,
       url: `${baseUrl}/p/${pasteId}`
     });
 
   } catch (err) {
     console.error("POST ERROR:", err);
-    return res.status(500).json({ error: "Insert failed" });
+    res.status(500).json({ error: err.message });
   }
 });
+
 
 
 
