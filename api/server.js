@@ -1,9 +1,9 @@
-
 const express = require("express");
 const cors = require("cors");
-const pool = require("./db");   // ✅ correct path
-const { nanoid } = require("nanoid");
+const pool = require("./db");
+const { randomUUID } = require("crypto");
 const path = require("path");
+const serverless = require("serverless-http");
 
 const app = express();
 app.use(cors());
@@ -20,11 +20,10 @@ app.get("/api/healthz", async (req, res) => {
     await pool.query("SELECT 1");
     res.json({ ok: true });
   } catch (err) {
-    console.error("HEALTH CHECK ERROR:", err);   // 👈 THIS LINE
+    console.error("HEALTH CHECK ERROR:", err);
     res.status(500).json({ ok: false });
   }
 });
-
 
 // CREATE PASTE
 app.post("/api/pastes", async (req, res) => {
@@ -34,7 +33,7 @@ app.post("/api/pastes", async (req, res) => {
     if (!content || content.trim() === "")
       return res.status(400).json({ error: "Content required" });
 
-    const id = nanoid(8);
+    const id = randomUUID(); // ✅ FIXED
     const now = Date.now();
     const expires_at = ttl_seconds ? now + ttl_seconds * 1000 : null;
 
@@ -44,18 +43,15 @@ app.post("/api/pastes", async (req, res) => {
       [id, content, now, expires_at, max_views || null]
     );
 
-   res.json({ id, url: `/p/${id}` });
-
-
+    res.json({ id, url: `/p/${id}` });
 
   } catch (err) {
-    console.error("CREATE PASTE ERROR:", err);  // 👈 LOGS REAL DB ERROR
+    console.error("CREATE PASTE ERROR:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-
-// FETCH PASTE API
+// FETCH PASTE
 app.get("/api/pastes/:id", async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
@@ -84,25 +80,32 @@ app.get("/api/pastes/:id", async (req, res) => {
   }
 });
 
-// VIEW PASTE HTML
+// VIEW PASTE
 app.get("/p/:id", async (req, res) => {
-  const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
-  const paste = rows[0];
+  try {
+    const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
+    const paste = rows[0];
+    if (!paste) return res.status(404).send("Paste not found");
 
-  if (!paste) return res.status(404).send("Paste not found");
+    const now = Date.now();
 
-  const now = Date.now();
+    if (paste.expires_at && now > paste.expires_at)
+      return res.status(404).send("Paste expired");
 
-  if (paste.expires_at && now > paste.expires_at)
-    return res.status(404).send("Paste expired");
+    if (paste.max_views && paste.views >= paste.max_views)
+      return res.status(404).send("View limit exceeded");
 
-  if (paste.max_views && paste.views >= paste.max_views)
-    return res.status(404).send("View limit exceeded");
+    await pool.query("UPDATE pastes SET views = views + 1 WHERE id=$1", [paste.id]);
 
-  await pool.query("UPDATE pastes SET views = views + 1 WHERE id=$1", [paste.id]);
+    res.send(`<pre>${paste.content.replace(/</g, "&lt;")}</pre>`);
 
-  res.send(`<pre>${paste.content.replace(/</g, "&lt;")}</pre>`);
+  } catch (err) {
+    console.error("VIEW PASTE ERROR:", err);
+    res.status(500).send("Server error");
+  }
 });
+
+// DEBUG
 app.get("/api/debug", async (req, res) => {
   try {
     await pool.query("SELECT 1");
@@ -122,7 +125,4 @@ app.get("/api/debug", async (req, res) => {
   }
 });
 
-
-const serverless = require("serverless-http");
 module.exports = serverless(app);
-
