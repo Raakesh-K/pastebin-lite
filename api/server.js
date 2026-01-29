@@ -1,21 +1,18 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const pool = require("../api/db");
+const pool = require("./db");   // ✅ correct path
 const { nanoid } = require("nanoid");
 const path = require("path");
-
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../Frontend")));
 
-// When user opens root URL, send index.html
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../Frontend/index.html"));
 });
-
 
 // HEALTH CHECK
 app.get("/api/healthz", async (req, res) => {
@@ -39,15 +36,15 @@ app.post("/api/pastes", async (req, res) => {
   const expires_at = ttl_seconds ? now + ttl_seconds * 1000 : null;
 
   await pool.query(
-    `INSERT INTO pastes(id, content, created_at, expires_at, max_views)
-     VALUES($1,$2,$3,$4,$5)`,
+    `INSERT INTO pastes(id, content, created_at, expires_at, max_views, views)
+     VALUES($1,$2,$3,$4,$5,0)`,
     [id, content, now, expires_at, max_views || null]
   );
 
   res.json({ id, url: `${process.env.BASE_URL}/p/${id}` });
 });
 
-// FETCH PASTE
+// FETCH PASTE API
 app.get("/api/pastes/:id", async (req, res) => {
   const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
   const paste = rows[0];
@@ -70,7 +67,6 @@ app.get("/api/pastes/:id", async (req, res) => {
   });
 });
 
-
 // VIEW PASTE HTML
 app.get("/p/:id", async (req, res) => {
   const { rows } = await pool.query("SELECT * FROM pastes WHERE id=$1", [req.params.id]);
@@ -80,20 +76,15 @@ app.get("/p/:id", async (req, res) => {
 
   const now = Date.now();
 
-  // TTL check
   if (paste.expires_at && now > paste.expires_at)
     return res.status(404).send("Paste expired");
 
-  // Max views check
   if (paste.max_views && paste.views >= paste.max_views)
     return res.status(404).send("View limit exceeded");
 
-  // Increase view count
   await pool.query("UPDATE pastes SET views = views + 1 WHERE id=$1", [paste.id]);
 
-  // Safe HTML render
   res.send(`<pre>${paste.content.replace(/</g, "&lt;")}</pre>`);
 });
 
 module.exports = app;
-
